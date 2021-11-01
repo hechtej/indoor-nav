@@ -1,0 +1,38 @@
+# This workflow will install, compile, and run the project to ensure its working
+
+name: indoor-nav
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  python-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+  python-compile-and-run:
+    needs: flask-lint
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Install Dependencies
+      run: |
+        python3 -m pip3 install --upgrade pip3
+        pip3 install -r requirements.txt
+    - name: Run Program
+      run: |
+        nohup python3 app.py & sleep 5
