@@ -31,8 +31,8 @@ jobs:
     steps:
     - name: Install Dependencies
       run: |
-        python3 -m pip3 install --upgrade pip3
-        pip3 install -r requirements.txt
+        python3 -m pip install --upgrade pip
+        pip install -r requirements.txt
     - name: Run Program
       run: |
         nohup python3 app.py & sleep 5
