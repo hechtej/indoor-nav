@@ -68,11 +68,22 @@ if __name__ == '__main__':
 
 		cv2.namedWindow("Stereo Pair")
 		
+		'''
+			Disparity: Double array of uint8
+				each is in range from 0 -> 255, 0(furthest) 255(closest)
+				[0][0] is top left (?)
+				[0][X] is top right
+				[X][0] is bottom left
+				[X][X] is bottom right
+
+		'''
 		while True:
 			disparity = getFrame(disparityQueue)
 			
 			disparity = (disparity * disparityMultiplier).astype(np.uint8)
 			
+			# Loop from [0][0]->[1280][800], get the average and print
+
 			leftFrame = getFrame(rectifiedLeftQueue)
 			rightFrame = getFrame(rectifiedRightQueue)
 			
