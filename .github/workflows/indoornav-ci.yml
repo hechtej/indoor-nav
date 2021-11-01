@@ -33,7 +33,8 @@ jobs:
       run: |
         python3 -m pip install --upgrade pip
         pip install -r requirements.txt
+        ls
     - name: Run Program
       run: |
         nohup python3 main.py & sleep 5
-      working-directory: ~/
+      working-directory: .
