@@ -35,4 +35,5 @@ jobs:
         pip install -r requirements.txt
     - name: Run Program
       run: |
-        nohup python3 app.py & sleep 5
+        nohup python3 main.py & sleep 5
+      working-directory: ~/
