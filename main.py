@@ -2,6 +2,10 @@ import cv2
 import depthai as dai
 import numpy as np
 
+MEASURED_AVERAGE = 255/771.665 #(max_dist-min_dist)/2+min_dist then converted to 0->255 range
+WARNING_THRESHOLD = 5
+DANGER_THRESHOLD = 10
+
 def getFrame(queue):
 	# Get frame from queue
 	frame = queue.get()
@@ -83,6 +87,24 @@ if __name__ == '__main__':
 			disparity = (disparity * disparityMultiplier).astype(np.uint8)
 			
 			# Loop from [0][0]->[1280][800], get the average and print
+			for col in range(edge_l,edge_r):
+				for row in range(edge_t,edge_b):
+					distance_sum = disparity[row][col]
+			
+			distance_avg = distance_sum / ((edge_b-edge_t)*(edge_r-edge_l))
+
+			#abs() allows for inclines & declines
+			ratio_avg = abs(distance_avg/MEASURED_AVERAGE)
+
+			#Detect if current dist_avg is off from the pre-measured average
+			if ratio_avg > DANGER_THRESHOLD:
+				#ALERT_DANGER
+				print("DANGER")
+
+			elif ratio_avg > WARNING_THRESHOLD:
+				#ALERT_WARNING
+				print("WARNING")
+
 
 			leftFrame = getFrame(rectifiedLeftQueue)
 			rightFrame = getFrame(rectifiedRightQueue)
