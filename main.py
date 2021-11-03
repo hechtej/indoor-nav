@@ -3,8 +3,11 @@ import depthai as dai
 import numpy as np
 
 MEASURED_AVERAGE = 255/771.665 #(max_dist-min_dist)/2+min_dist then converted to 0->255 range
-WARNING_THRESHOLD = 5
-DANGER_THRESHOLD = 10
+WARNING_THRESHOLD = 20
+DANGER_THRESHOLD = 50
+
+CAM_WIDTH = 640
+CAM_HEIGHT = 400
 
 def getFrame(queue):
 	# Get frame from queue
@@ -43,34 +46,18 @@ if __name__ == '__main__':
 	
 	stereo = getStereoPair(pipeline, monoLeft, monoRight)
 	
-	# Define output depth map
-	xOutDepth = pipeline.createXLinkOut()
-	xOutDepth.setStreamName("depth")
-	
 	xOutDisp = pipeline.createXLinkOut()
 	xOutDisp.setStreamName("disparity")
-
-	xOutRectifiedLeft = pipeline.createXLinkOut()
-	xOutRectifiedLeft.setStreamName("rectifiedLeft")
-
-	xOutRectifiedRight = pipeline.createXLinkOut()
-	xOutRectifiedRight.setStreamName("rectifiedRight")
 	
 	stereo.disparity.link(xOutDisp.input)
-	
-	stereo.rectifiedLeft.link(xOutRectifiedLeft.input)
-	stereo.rectifiedRight.link(xOutRectifiedRight.input)
 	
 	# Connect device
 	with dai.Device(pipeline) as device:
 		disparityQueue = device.getOutputQueue(name="disparity", maxSize=1, blocking=False)
-		rectifiedLeftQueue = device.getOutputQueue(name="rectifiedLeft", maxSize=1, blocking=False)
-		rectifiedRightQueue = device.getOutputQueue(name="rectifiedRight", maxSize=1, blocking=False)
+		depthQueue     = device.getOutputQueue(name="depth", maxSize=1, blocking=False)
 		
 		# map disparity from 0 to 255
 		disparityMultiplier = 255 / stereo.getMaxDisparity()
-
-		cv2.namedWindow("Stereo Pair")
 		
 		'''
 			Disparity: Double array of uint8
@@ -83,37 +70,29 @@ if __name__ == '__main__':
 		'''
 		while True:
 			disparity = getFrame(disparityQueue)
-			
 			disparity = (disparity * disparityMultiplier).astype(np.uint8)
+
+			# Loop over every pixel to get average
+			distance_sum = 0
+			for col in range(0, CAM_WIDTH):
+				for row in range(0, CAM_HEIGHT):
+					distance_sum = distance_sum + disparity[row][col]
 			
-			# Loop from [0][0]->[1280][800], get the average and print
-			for col in range(edge_l,edge_r):
-				for row in range(edge_t,edge_b):
-					distance_sum = disparity[row][col]
-			
-			distance_avg = distance_sum / ((edge_b-edge_t)*(edge_r-edge_l))
+			distance_avg = distance_sum / (CAM_HEIGHT*CAM_WIDTH)
 
 			#abs() allows for inclines & declines
 			ratio_avg = abs(distance_avg/MEASURED_AVERAGE)
 
 			#Detect if current dist_avg is off from the pre-measured average
-			if ratio_avg > DANGER_THRESHOLD:
+			if distance_avg > DANGER_THRESHOLD:
 				#ALERT_DANGER
 				print("DANGER")
 
-			elif ratio_avg > WARNING_THRESHOLD:
+			elif distance_avg > WARNING_THRESHOLD:
 				#ALERT_WARNING
 				print("WARNING")
 
 
-			leftFrame = getFrame(rectifiedLeftQueue)
-			rightFrame = getFrame(rectifiedRightQueue)
-			
-			# Show stereo view by averaging left and right cameras
-			imOut = np.uint8(leftFrame/2 + rightFrame/2)
-
-
-			cv2.imshow("Stereo Pair", imOut)
 			cv2.imshow("Disparity", disparity)
 
 			# Check for keyboard input
