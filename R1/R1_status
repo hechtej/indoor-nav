@@ -1,6 +1,6 @@
 Progress:
 So far we have successfully implemented a wall detector, however the staircase detector still needs to be tested.
-We have calculations in place to determine how we will be detecting staircases and other obtacles.
+We have calculations in place to determine how we will be detecting staircases and other obstacles.
 
 Calculations:
 [Reference images/angle_calc.png]
@@ -8,5 +8,14 @@ Using some basic trigonometry math, we were able to calculate the maximum angle 
 We were also able to create a formula for finding out the total distance ahead of the wheelchair that was visible when installed at a height X.
 
 UI:
-Although not originally planned, we have started the conceptualization of a UI design, and reference images can be seen in images/UI_[#].png
-The current state of our UI is printing to the terminal when an alert is triggered.  This should be easily adjustable to some speaker library for an alert sound.
+The UI is currently very rudimentary, featuring only a single screen.
+[Reference images/UI_1a.png]
+ID: 1
+Name: Indoor Nav
+Description: Features a danger bar along the top, and a real-time depth feed from the OAK-D camera. All black pixels on the feed indicate an unknown depth by the camera, and so are ignored when processing the image. For each frame, the average depth value (excluding unknown depth values) is calculated for the whole image, and compared to a pre-calibrated constant value. The amount that these values differ by is used to determine how much danger the wheelchair user is in, adjusting the danger bar accordingly. When it exceeds half, the wheelchair would be forcibly stopped to avoid collision.
+
+This feature has been tested on instances where the calculated distance is lower than the expected distance (as with walls and other obstacles) as well as on cases where the calculated distance is higher, as would be the case if the camera were facing a downward staircase.  This allows the wheelchair user to be stopped from both colliding with obstacles and falling off ledges.
+
+You can see this functionality at work in [images/UI_1b.png], where a rabbit has placed herself in front of the camera, with the outline of her head and upper body being visible in the top right of the frame. Accordingly, the danger bar has increased in value from the baseline in [images/UI_1a.png], warranting an emergency stop.
+
+The wheelchair controls are simulated in this case. This is due to lacking access to an intelligent wheelchair to interface with the software. Instead, the camera is placed on an office chair and rolled around by the user, who stops when the danger bar exceeds the halfway mark.
