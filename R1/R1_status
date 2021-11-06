@@ -3,7 +3,7 @@ So far we have successfully implemented a wall detector, however the staircase d
 We have calculations in place to determine how we will be detecting staircases and other obstacles.
 
 Calculations:
-[Reference images/angle_calc.png]
+[Reference images/angle_calc.jpg]
 Using some basic trigonometry math, we were able to calculate the maximum angle for the sensors when placed at the 30" specified by Dr. Leaman.
 We were also able to create a formula for finding out the total distance ahead of the wheelchair that was visible when installed at a height X.
 
