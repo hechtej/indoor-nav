@@ -22,9 +22,9 @@ $ deactivate
 ```
 
 ## Implemented Features
-[X] Installation & Testing of Sensors
-[X] Obstacle Detection
-[X] Danger Bar
+- [X] Installation & Testing of Sensors
+- [X] Obstacle Detection
+- [X] Danger Bar
 
 ## Programming
 Look into the depthai and opencv APIs for programming info.
