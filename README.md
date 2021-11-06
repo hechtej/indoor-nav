@@ -1,7 +1,7 @@
 # Indoor-Navigation
 
 ## Overview
-Located [here](https://github.com/hechtej/indoor-nav) (https://github.com/hechtej/indoor-nav).
+Link to source code repo: https://github.com/hechtej/indoor-nav
 
 Shows an estimated depth stream from the OAK-D camera.  Based on how much this deviates from a pre-determined average depth, a danger value is calculated which, if it exceeds a certain threshold, may warrant an emergency stop.
 
