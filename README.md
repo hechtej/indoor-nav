@@ -1,5 +1,3 @@
-# Indoor-Navigation
-
 ## Overview
 Link to source code repo: https://github.com/hechtej/indoor-nav
 
