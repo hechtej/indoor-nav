@@ -1,14 +1,11 @@
-# IndoorNavigation - [InsertProjectNameHere]
 ## Overview
-Presently simply shows an estimated depth stream from the OAK-D camera.
+Link to source code repo: https://github.com/hechtej/indoor-nav
 
-Look into the depthai and opencv APIs for programming info.
+Shows an estimated depth stream from the OAK-D camera.  Based on how much this deviates from a pre-determined average depth, a danger value is calculated which, if it exceeds a certain threshold, may warrant an emergency stop.
 
 Can simply be run with `python3 main.py`.  If no camera is connected, the program will crash.
 
-Other, more complicated sample programs with more fancy features are available.  We can look to those for inspiration if we wish.  https://github.com/luxonis/depthai-experiments
-
-## SETUP
+## Setup
 ```
 $ sudo apt install python3
 $ sudo apt install virtualenv
@@ -21,3 +18,13 @@ $ python3 main.py
  # to deactivate virtualenv #
 $ deactivate 
 ```
+
+## Implemented Features
+- [X] Installation & Testing of Sensors
+- [X] Obstacle Detection
+- [X] Danger Bar
+
+## Programming
+Look into the depthai and opencv APIs for programming info.
+
+Other, more complicated sample programs with more fancy features are available.  We can look to those for inspiration if we wish.  https://github.com/luxonis/depthai-experiments
