@@ -86,20 +86,14 @@ if __name__ == '__main__':
 		makeSlider("Danger", WINDOW, 0, DANGER_THRESHOLD)
 
 		skipFrame = False
+		frameCount = 0
 
 		while True:
-			# If we spend every iteration of the loop just processing the frames, we get to a point
-			# where keyboard inputs are HUGELY delayed (presumably some opencv event loop gets 
-			# overloaded?).  quick hacky fix is to spend every other iteration not doing anything 
-			# other than user input
-			skipFrame = not skipFrame
-			if not skipFrame:
-				disparity = getFrame(disparityQueue)
-				disparity = (disparity * disparityMultiplier).astype(np.uint8)
-				danger = analyze_frame(disparity)
-				setSlider("Danger", WINDOW, danger)
-
-				cv2.imshow(WINDOW, disparity)
+			disparity = getFrame(disparityQueue)
+			disparity = (disparity * disparityMultiplier).astype(np.uint8)
+			cv2.imshow(WINDOW, disparity)
+			cv2.imwrite('testing/test_wall/image'+str(frameCount)+'.png', disparity)
+			frameCount = frameCount+1
 
 			# Check for keyboard input
 			key = cv2.waitKey(1)

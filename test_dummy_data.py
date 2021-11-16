@@ -1,11 +1,8 @@
-import csv
-import main import analyze_frame
+import cv2
+from main import analyze_frame
 
 if __name__ == '__main__':
-    # Loop through 1 second of data
-    for index in range(0,60): 
-        dummy_frame_csv = open("/testing/test_wall/dummy_data_wall_"+index+".csv") 
-        dummy_frame = []
-        for row in dummy_frame_csv:
-            dummy_frame.append(row)
+    # Loop through all data in our test folder
+    for index in range(0,101): 
+        dummy_frame = cv2.imread("testing/test_wall/image"+str(index)+".png", cv2.IMREAD_UNCHANGED) 
         danger = analyze_frame(dummy_frame)
