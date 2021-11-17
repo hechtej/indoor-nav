@@ -6,3 +6,4 @@ if __name__ == '__main__':
     for index in range(0,101): 
         dummy_frame = cv2.imread("testing/test_wall/image"+str(index)+".png", cv2.IMREAD_UNCHANGED) 
         danger = analyze_frame(dummy_frame)
+        print(danger)
