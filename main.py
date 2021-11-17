@@ -86,41 +86,14 @@ if __name__ == '__main__':
 		makeSlider("Danger", WINDOW, 0, DANGER_THRESHOLD)
 
 		skipFrame = False
+		frameCount = 0
 
 		while True:
-			# If we spend every iteration of the loop just processing the frames, we get to a point
-			# where keyboard inputs are HUGELY delayed (presumably some opencv event loop gets 
-			# overloaded?).  quick hacky fix is to spend every other iteration not doing anything 
-			# other than user input
-			skipFrame = not skipFrame
-			if not skipFrame:
-				disparity = getFrame(disparityQueue)
-				disparity = (disparity * disparityMultiplier).astype(np.uint8)
-
-				# Loop over every pixel to get average
-				distance_sum = 0
-				sample_count = 0
-				for col in range(0, CAM_WIDTH):
-					for row in range(0, CAM_HEIGHT):
-						# disparity reading of 0 means the true value is unknown.
-						# there's probably some clever way of patching the gaps by interpolating
-						# nearby valid readings, but for now we'll just ignore it.
-						# this can cause some issues when things are too close to the camera for
-						# proper readings, but ideally we'll catch the danger before it's that close
-						if disparity[row][col] != 0:
-							sample_count = sample_count + 1
-							distance_sum = distance_sum + disparity[row][col]
-			
-				distance_avg = distance_sum / sample_count
-
-				# danger increases if above or below the calibrated value, detecting both
-				# obstacles and drops.  we cap it at DANGER_THRESHOLD for display.
-				# an emergency stop should be triggered if we exceed WARNING_THRESHOLD
-				danger = int(min(abs(distance_avg - ESTIMATED_SAFE_VALUE), DANGER_THRESHOLD))
-
-				setSlider("Danger", WINDOW, danger)
-
-				cv2.imshow(WINDOW, disparity)
+			disparity = getFrame(disparityQueue)
+			disparity = (disparity * disparityMultiplier).astype(np.uint8)
+			cv2.imshow(WINDOW, disparity)
+			cv2.imwrite('testing/test_wall/image'+str(frameCount)+'.png', disparity)
+			frameCount = frameCount+1
 
 			# Check for keyboard input
 			key = cv2.waitKey(1)
@@ -128,5 +101,31 @@ if __name__ == '__main__':
 				# Quit when q is pressed
 				break
 
-
 		cv2.destroyAllWindows()
+
+'''
+	Analyzes a given frame
+	returns the danger value
+'''
+def analyze_frame(frame):
+		# Loop over every pixel to get average
+		distance_sum = 0
+		sample_count = 0
+		for col in range(0, CAM_WIDTH):
+			for row in range(0, CAM_HEIGHT):
+				# frame reading of 0 means the true value is unknown.
+				# there's probably some clever way of patching the gaps by interpolating
+				# nearby valid readings, but for now we'll just ignore it.
+				# this can cause some issues when things are too close to the camera for
+				# proper readings, but ideally we'll catch the danger before it's that close
+				if frame[row][col] != 0:
+					sample_count = sample_count + 1
+					distance_sum = distance_sum + frame[row][col]
+	
+		distance_avg = distance_sum / sample_count
+
+		# danger increases if above or below the calibrated value, detecting both
+		# obstacles and drops.  we cap it at DANGER_THRESHOLD for display.
+		# an emergency stop should be triggered if we exceed WARNING_THRESHOLD
+		danger = int(min(abs(distance_avg - ESTIMATED_SAFE_VALUE), DANGER_THRESHOLD))
+		return danger
