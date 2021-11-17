@@ -44,8 +44,8 @@ jobs:
     - name: Run Program
       run: |
         nohup python3 main.py & sleep 5
-
-    test-dummy-data:
+  
+  test-dummy-data:
       runs-on: ubuntu-latest
 
       steps:
