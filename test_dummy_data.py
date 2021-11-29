@@ -24,6 +24,6 @@ def test(test_name):
         danger = int(min(abs(distance_avg - ESTIMATED_SAFE_VALUE), DANGER_THRESHOLD))
         if danger > 10:
             print("DANGER")
-        else if danger > 5:
+        elif danger > 5:
             print("WARNING")
     print("Finished testing for "+test_name+"---------------")
