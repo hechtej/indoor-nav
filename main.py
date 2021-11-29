@@ -86,14 +86,30 @@ if __name__ == '__main__':
 		makeSlider("Danger", WINDOW, 0, DANGER_THRESHOLD)
 
 		skipFrame = False
-		frameCount = 0
 
 		while True:
-			disparity = getFrame(disparityQueue)
-			disparity = (disparity * disparityMultiplier).astype(np.uint8)
-			cv2.imshow(WINDOW, disparity)
-			cv2.imwrite('testing/test_wall/image'+str(frameCount)+'.png', disparity)
-			frameCount = frameCount+1
+			# If we spend every iteration of the loop just processing the frames, we get to a point
+			# where keyboard inputs are HUGELY delayed (presumably some opencv event loop gets 
+			# overloaded?).  quick hacky fix is to spend every other iteration not doing anything 
+			# other than user input
+			skipFrame = not skipFrame
+			if not skipFrame:
+				disparity = getFrame(disparityQueue)
+				disparity = (disparity * disparityMultiplier).astype(np.uint8)
+				cv2.imshow(WINDOW, disparity)
+
+				# numpy has some features for working with arrays that are less intuitive, but also 
+				# astronomically faster than doing the same thing in interpreted python.
+				# Due to disparity being a numpy array, we can use said features.
+				# In this case, disparity[disparity != 0] returns disparity with all of the 0s removed,
+				# then mean() gets the average value of this array.
+				# We remove 0s because 0 is a special value used when depth is unknown, which we ignore.
+				distance_avg = disparity[disparity != 0].mean()
+
+				danger = int(min(abs(distance_avg - ESTIMATED_SAFE_VALUE), DANGER_THRESHOLD))
+
+				setSlider("Danger", WINDOW, danger)
+				cv2.imshow(WINDOW, disparity)
 
 			# Check for keyboard input
 			key = cv2.waitKey(1)
