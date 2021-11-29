@@ -1,6 +1,7 @@
 import csv
 import cv2
 import main 
+import os
 
 MEASURED_AVERAGE = 255/771.665 #(max_dist-min_dist)/2+min_dist then converted to 0->255 range
 
@@ -17,8 +18,10 @@ def test(test_name):
     print("Testing for "+test_name+"---------------")
     if test_name == "empty":
         print("--THERE SHOULD BE NO WARNINGS OR DANGER HERE--")
+    path, dirs, files = next(os.walk("testing/test_"+test_name))
+    file_count = len(files)
     # Test test_name
-    for index in range(0,60): 
+    for index in range(0,file_count): 
         dummy_frame = cv2.imread("testing/test_"+test_name+"/image"+str(index)+".png", cv2.IMREAD_UNCHANGED) 
         distance_avg = dummy_frame[dummy_frame != 0].mean()
         danger = int(min(abs(distance_avg - ESTIMATED_SAFE_VALUE), DANGER_THRESHOLD))
