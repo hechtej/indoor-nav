@@ -2,6 +2,7 @@ import cv2
 import depthai as dai
 import numpy as np
 import time
+import math
 
 MEASURED_AVERAGE = 255/771.665 #(max_dist-min_dist)/2+min_dist then converted to 0->255 range
 
@@ -11,6 +12,15 @@ DANGER_THRESHOLD =  10
 
 CAM_WIDTH = 640
 CAM_HEIGHT = 400
+
+# At the moment, the camera is 45 cm from the ground, pointed 30 degrees downward
+MOUNT_ELEVATION = 45
+MOUNT_ANGLE = -30
+
+HFOV = 71.9 # Horizontal field of view
+VFOV = 50.0 # Vertical field of view
+BASELINE = 7.5 # Distance between stereo cameras in cm
+FOCAL = 883.15 # Magic number needed for disparity -> depth calculation
 
 WINDOW = "Indoor Nav"
 
@@ -41,6 +51,58 @@ def getStereoPair(pipeline, monoLeft, monoRight):
 	monoRight.out.link(stereo.right)
 
 	return stereo
+
+def getReference():
+	referenceFrame = np.zeros( (CAM_HEIGHT, CAM_WIDTH) ) # same dimensions as images from the camera
+
+	# Iterating in interpreted python instead of numpy
+	# This is slow, but we only do this once at startup
+	for y in range(0, CAM_HEIGHT):
+		# Angle of the current pixel
+		theta = ((1.0-(y / CAM_HEIGHT)) * VFOV) - (VFOV / 2) + MOUNT_ANGLE
+
+		brightness = depthToBrightness(MOUNT_ELEVATION / (abs(math.tan(math.radians(theta)))))
+
+		for x in range(0, CAM_WIDTH):
+			referenceFrame[y][x] = brightness
+
+	return referenceFrame.astype(np.uint8)
+
+# Image brightness (0 to 255) to depth (cm)
+# Ideally we'd use disparity to depth, but our test cases already map disparity from
+# 0 to 255, while the raw disparity value is 0 to 95, so we convert brightness to
+# disparity first, then disparity to depth.
+def brightnessToDepth(b):
+	disparity = (95 * b) / 255
+
+	return BASELINE * FOCAL / disparity
+
+def depthToBrightness(d):
+	disparity = BASELINE * FOCAL / d
+
+	return disparity
+
+'''
+	Analyzes a given frame compared to what is considered a safe reference image
+	returns the danger value, and a new frame which highlights dangerous areas in white
+'''
+def analyze_frame(frame, referenceFrame):
+	frame = np.where(frame!=0, frame, referenceFrame) # replace unknown values with whatever value is expected
+			
+	# we then find the difference between the expected depth and actual depth
+
+	# terrible no-good bad hacky workaround for underflow during subtraction:
+	frame = np.clip( np.abs(np.subtract(frame.astype(np.int16), referenceFrame.astype(np.int16))), 0, 255 ).astype(np.uint8)
+	# essentially, cast both operands to int16, subtract, get absolute value, clamp to [0,255], cast back to uint8
+
+	# we're now left with an image where black means expected, white means unexpected.
+	# therefore, looking for white in the image gives an estimate of danger
+
+	# experimentally, an average value of 50 is extreme danger
+	# so we just divide by 5 to get a decent 0-10 danger value
+	# there's some issues with the math so an empty room gives danger of like, 2? but that's fine for now
+	danger = np.clip(int(np.mean(frame) / 5), 0, 10) 
+	return danger, frame
 
 # UI helper functions to workaround lambda arguments
 def makeSlider(name, window, a_min, a_max):
@@ -84,32 +146,16 @@ if __name__ == '__main__':
 		cv2.namedWindow(WINDOW)
 
 		makeSlider("Danger", WINDOW, 0, DANGER_THRESHOLD)
-
-		skipFrame = False
+		referenceFrame = getReference()
 
 		while True:
-			# If we spend every iteration of the loop just processing the frames, we get to a point
-			# where keyboard inputs are HUGELY delayed (presumably some opencv event loop gets 
-			# overloaded?).  quick hacky fix is to spend every other iteration not doing anything 
-			# other than user input
-			skipFrame = not skipFrame
-			if not skipFrame:
-				disparity = getFrame(disparityQueue)
-				disparity = (disparity * disparityMultiplier).astype(np.uint8)
-				cv2.imshow(WINDOW, disparity)
+			disparity = getFrame(disparityQueue)
+			disparity = (disparity * disparityMultiplier).astype(np.uint8)
 
-				# numpy has some features for working with arrays that are less intuitive, but also 
-				# astronomically faster than doing the same thing in interpreted python.
-				# Due to disparity being a numpy array, we can use said features.
-				# In this case, disparity[disparity != 0] returns disparity with all of the 0s removed,
-				# then mean() gets the average value of this array.
-				# We remove 0s because 0 is a special value used when depth is unknown, which we ignore.
-				distance_avg = disparity[disparity != 0].mean()
+			danger, result = analyze_frame(disparity, referenceFrame)
 
-				danger = int(min(abs(distance_avg - ESTIMATED_SAFE_VALUE), DANGER_THRESHOLD))
-
-				setSlider("Danger", WINDOW, danger)
-				cv2.imshow(WINDOW, disparity)
+			cv2.imshow(WINDOW, result)
+			setSlider("Danger", WINDOW, danger)
 
 			# Check for keyboard input
 			key = cv2.waitKey(1)
@@ -118,30 +164,3 @@ if __name__ == '__main__':
 				break
 
 		cv2.destroyAllWindows()
-
-'''
-	Analyzes a given frame
-	returns the danger value
-'''
-def analyze_frame(frame):
-		# Loop over every pixel to get average
-		distance_sum = 0
-		sample_count = 0
-		for col in range(0, CAM_WIDTH):
-			for row in range(0, CAM_HEIGHT):
-				# frame reading of 0 means the true value is unknown.
-				# there's probably some clever way of patching the gaps by interpolating
-				# nearby valid readings, but for now we'll just ignore it.
-				# this can cause some issues when things are too close to the camera for
-				# proper readings, but ideally we'll catch the danger before it's that close
-				if frame[row][col] != 0:
-					sample_count = sample_count + 1
-					distance_sum = distance_sum + frame[row][col]
-	
-		distance_avg = distance_sum / sample_count
-
-		# danger increases if above or below the calibrated value, detecting both
-		# obstacles and drops.  we cap it at DANGER_THRESHOLD for display.
-		# an emergency stop should be triggered if we exceed WARNING_THRESHOLD
-		danger = int(min(abs(distance_avg - ESTIMATED_SAFE_VALUE), DANGER_THRESHOLD))
-		return danger
