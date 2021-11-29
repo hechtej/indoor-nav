@@ -1,15 +1,7 @@
 import csv
+import cv2
 import main 
 import analyze_frame
-
-if __name__ == '__main__':
-    test("basket")
-    test("drop")
-    test("empty")
-    test("mug")
-    test("table")
-    test("wall")
-
 
 def test(test_name):
     print("Testing for "+test_name+"---------------")
@@ -27,3 +19,12 @@ def test(test_name):
         elif danger > 5:
             print("WARNING")
     print("Finished testing for "+test_name+"---------------")
+
+if __name__ == '__main__':
+    test("basket")
+    test("drop")
+    test("empty")
+    test("mug")
+    test("table")
+    test("wall")
+
