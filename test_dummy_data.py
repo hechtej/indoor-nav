@@ -1,5 +1,6 @@
 import csv
-import main import analyze_frame
+import main 
+import analyze_frame
 
 if __name__ == '__main__':
     test("basket")
