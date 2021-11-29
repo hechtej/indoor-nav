@@ -1,7 +1,6 @@
 import csv
 import cv2
 import main 
-import analyze_frame
 
 MEASURED_AVERAGE = 255/771.665 #(max_dist-min_dist)/2+min_dist then converted to 0->255 range
 
