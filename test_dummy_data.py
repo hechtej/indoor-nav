@@ -20,10 +20,8 @@ def test(test_name):
         print("--THERE SHOULD BE NO WARNINGS OR DANGER HERE--")
     # Test test_name
     for index in range(0,60): 
-        dummy_frame_csv = cv2.imread("testing/test_"+test_name+"/image"+str(index)+".png", cv2.IMREAD_UNCHANGED) 
-        dummy_frame = []
-        for row in dummy_frame_csv:
-            dummy_frame.append(row)
+        dummy_frame = cv2.imread("testing/test_"+test_name+"/image"+str(index)+".png", cv2.IMREAD_UNCHANGED) 
+        distance_avg = dummy_frame[dummy_frame != 0].mean()
         danger = int(min(abs(distance_avg - ESTIMATED_SAFE_VALUE), DANGER_THRESHOLD))
         if danger > 10:
             print("DANGER")
