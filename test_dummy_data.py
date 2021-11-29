@@ -13,18 +13,28 @@ def test(test_name):
 
     reference = main.get_reference()
 
+    danger_count = 0
+    warning_count = 0
+    safe_count = 0
+
     # Test test_name
     for index in range(0,file_count): 
         dummy_frame = cv2.imread("testing/test_"+test_name+"/image"+str(index)+".png", cv2.IMREAD_UNCHANGED) 
 
         danger, result = main.analyze_frame(dummy_frame, reference)
 
-        if danger >= 6:
-            print("DANGER")
+        if danger >= 7:
+            danger_count = danger_count + 1
         elif danger >= 3:
-            print("WARNING")
+            warning_count = warning_count + 1
+        else:
+            safe_count = safe_count + 1
 
-    print("Finished testing for "+test_name+"---------------")
+    print("Safe frames:      "+str(safe_count))
+    print("Warning frames:   "+str(warning_count))
+    print("Dangerous frames: "+str(danger_count))
+
+    print("Finished testing for "+test_name+"---------------\n")
 
 if __name__ == '__main__':
     test("basket")
