@@ -52,7 +52,7 @@ def getStereoPair(pipeline, monoLeft, monoRight):
 
 	return stereo
 
-def getReference():
+def get_reference():
 	referenceFrame = np.zeros( (CAM_HEIGHT, CAM_WIDTH) ) # same dimensions as images from the camera
 
 	# Iterating in interpreted python instead of numpy
@@ -146,7 +146,7 @@ if __name__ == '__main__':
 		cv2.namedWindow(WINDOW)
 
 		makeSlider("Danger", WINDOW, 0, DANGER_THRESHOLD)
-		referenceFrame = getReference()
+		referenceFrame = get_reference()
 
 		while True:
 			disparity = getFrame(disparityQueue)
