@@ -3,6 +3,17 @@ import cv2
 import main 
 import analyze_frame
 
+MEASURED_AVERAGE = 255/771.665 #(max_dist-min_dist)/2+min_dist then converted to 0->255 range
+
+ESTIMATED_SAFE_VALUE = 140 # Camera pointed about 30 degrees down 14 inches from the ground reads this pretty consistently
+WARNING_THRESHOLD = 5
+DANGER_THRESHOLD =  10
+
+CAM_WIDTH = 640
+CAM_HEIGHT = 400
+
+WINDOW = "Indoor Nav"
+
 def test(test_name):
     print("Testing for "+test_name+"---------------")
     if test_name == "empty":
