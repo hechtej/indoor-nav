@@ -1,0 +1,13 @@
+Progress:
+    We were able to meet our requirements for the most part, with us completing the installation, obstacle detection, and danger 
+bar.  However, we were unable to complete the Alert System requirement where we were to create a noise or notification based on 
+the obstacle detection.
+    This requirement would need more testing on the actual device (the client’s computer, or mobile device) as the libraries 
+used may change depending on the device.  	Once this is achieved however, this should not be too difficult to complete as 
+all that would need to be added would be an additional line or two of code for the danger level check within main.py.
+    For the completed requirements, as seen in Figure 1, we have successfully been able to create a working obstacle detection 
+algorithm that will be able to output a danger signal on a 3-level scale when processing an image.
+
+Calculations:
+
+UI:
